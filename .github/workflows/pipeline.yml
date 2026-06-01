@@ -1,4 +1,4 @@
-name: Retail Data Pipeline
+name: Retail Pipeline
 
 on:
   push:
@@ -13,7 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Setup Python
@@ -30,17 +31,23 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pyspark
           pip install -r requirements.txt
 
-      - name: Run Bronze Layer
+      - name: Run Bronze
         run: |
           python -m src.bronze.ingest_data
 
-      - name: Run Silver Layer
+      - name: Run Silver
         run: |
-          python -m src.silver.clean_data
+          python -m src.silver.transform_data
 
-      - name: Run Gold Layer
+      - name: Run Gold
         run: |
-          python -m src.gold.customer_sales
+          python -m src.gold.build_marts
+
+      - name: Upload Gold File
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
+        run: |
+          python scripts/upload_blob.py
