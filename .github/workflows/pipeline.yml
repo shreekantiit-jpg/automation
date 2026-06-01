@@ -1,8 +1,6 @@
 name: Retail Pipeline
 
 on:
-  workflow_dispatch:
-
   push:
     branches:
       - main
@@ -12,7 +10,6 @@ env:
 
 jobs:
   retail-pipeline:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -36,36 +33,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify Project Structure
-        run: |
-          pwd
-          ls -R
-
-      - name: Run Bronze Layer
+      - name: Run Bronze
         run: |
           python -m src.bronze.ingest_data
 
-      - name: Verify Bronze Output
+      - name: Run Silver
         run: |
-          find bronze -type d || true
+          python -m src.silver.clean_data
 
-      - name: Run Silver Layer
-        run: |
-          python -m src.silver.transform_data
-
-      - name: Verify Silver Output
-        run: |
-          find silver -type d || true
-
-      - name: Run Gold Layer
+      - name: Run Gold
         run: |
           python -m src.gold.build_marts
 
-      - name: Verify Gold Output
-        run: |
-          find gold -type f || true
-
-      - name: Upload Gold File To Azure Blob
+      - name: Upload Gold File
         env:
           AZURE_STORAGE_ACCOUNT: ${{ secrets.AZURE_STORAGE_ACCOUNT }}
           AZURE_STORAGE_KEY: ${{ secrets.AZURE_STORAGE_KEY }}
