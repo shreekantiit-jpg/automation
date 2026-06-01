@@ -39,7 +39,7 @@ jobs:
 
       - name: Run Silver
         run: |
-          python -m src.silver.transform_data
+          python -m src.silver.clean_data
 
       - name: Run Gold
         run: |
