@@ -9,7 +9,7 @@ customers = spark.read.parquet(
 customers = customers.dropDuplicates()
 
 customers.write.mode("overwrite") \
-    .parquet("silver/customers")
+    .parquet("silver/customer_sales")
 
 print("Silver Layer Completed")
 
