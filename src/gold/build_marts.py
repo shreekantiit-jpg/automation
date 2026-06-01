@@ -6,38 +6,25 @@ import os
 
 spark = get_spark()
 
-# Read Data
-customers = spark.read.parquet(
-    "silver/customer_sales"
+customers = spark.read.parquet("silver/customer_sales")
+orders = spark.read.parquet("bronze/orders")
+products = spark.read.parquet("bronze/products")
+
+sales = (
+    orders
+    .join(customers, "customer_id")
+    .join(products, "product_id")
 )
 
-orders = spark.read.parquet(
-    "bronze/orders"
-)
-
-products = spark.read.parquet(
-    "bronze/products"
-)
-
-# Join Data
-sales = orders.join(
-    customers,
-    "customer_id"
-).join(
-    products,
-    "product_id"
-)
-
-# Calculate Revenue
 sales = sales.withColumn(
     "revenue",
     col("quantity").cast("int") *
     col("price").cast("int")
 )
 
-# Aggregate for Power BI
+# Aggregate by product
 gold_df = sales.groupBy(
-    "category"
+    "product_id"
 ).agg(
     spark_sum("revenue").alias("total_sales")
 )
@@ -50,23 +37,18 @@ gold_df.coalesce(1) \
     .option("header", True) \
     .csv(gold_output)
 
-# Create single CSV file
 csv_files = glob.glob(
     f"{gold_output}/part-*.csv"
 )
 
-if len(csv_files) > 0:
-
-    if os.path.exists("customer_sales.csv"):
-        os.remove("customer_sales.csv")
-
+if csv_files:
     shutil.copy(
         csv_files[0],
         "customer_sales.csv"
     )
 
-print("Gold Layer Completed")
-
 gold_df.show()
+
+print("Gold Layer Completed")
 
 spark.stop()
