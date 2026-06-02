@@ -28,4 +28,4 @@ with open("customer_sales.csv", "rb") as data:
         overwrite=True
     )
 
-print("File uploaded successfully done")
+print("File uploaded successfully done ok")
