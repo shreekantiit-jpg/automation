@@ -1,3 +1,5 @@
 pyspark==3.5.1
 azure-storage-blob
 requests
+install devops any version
+install java any version
